@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8' />
+    <title>MyMapWeb
+    </title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.49.0/mapbox-gl.js'></script>
+    <script src='./building.js'></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.49.0/mapbox-gl.css' rel='stylesheet' />
+</head>
+<body>
+
+<style> 
+    #menu {
+        background:#fff;
+        position: absolute;
+        z-index: 1;
+        top: 10px;
+        right: 10px;
+        border-radius: 3px;
+        width: 120px;
+        border: 1px solid rgba(0,0,0,0.4);
+        font-family: 'Open Sans', sans-serif;
+    }
+            
+    #menu a {
+        font-size: 13px;
+        color: #404040;
+        display: block;
+        margin: 0;
+        padding: 0;
+        padding: 10px;
+        text-decoration: none;
+        border-bottom: 1px solid rgba(0,0,0,0.25);
+         text-align: center;
+    }
+            
+    #menu a:last-child {
+       border: none;
+    }
+            
+    #menu a:hover {
+      background-color: #f8f8f8;
+      color: #404040;
+    }
+            
+    #menu a.active {
+      background-color: #3887be;
+      color: #ffffff;
+    }
+            
+    #menu a.active:hover {
+       background: #3074a4;
+    }
+</style>
+
+<nav id="menu"></nav>
+
+<div id="map" style='width :90%; height: 500px'></div>
+<script>
+mapboxgl.accessToken = 'pk.eyJ1IjoidGVyZXNhMTIzIiwiYSI6ImNqbHA5dXplcjIycWUzd29zM3Uya3hidWMifQ.KYno3Ky-NnoqIV6E_tbtLA';
+var map = new mapboxgl.Map({
+    container: 'map', // container id
+    style: 'mapbox://styles/mapbox/light-v9', // stylesheet location
+    center: [151.20, -33.89],// starting position [lng, lat]
+    pitch: 45,
+    bearing: -17,
+    zoom: 11 // starting zoom
+});
+map.on('load', function() {
+
+map.addLayer({
+    "id": "data",
+    "type": "fill-extrusion",
+    "source": {
+        'type': 'geojson',
+        'data': './building.geojson'
+    },
+    'layout': {
+        'visibility': 'visible'
+        },
+    'paint': {
+            'fill-extrusion-color' : {
+                'property': 'colour',
+                'type': 'identity'
+            },
+            'fill-extrusion-height' : {
+                'type': 'identity',
+                'property': 'height'
+            },
+            'fill-extrusion-base' : {
+                'type': 'identity',
+                'property': 'base_height'
+            },
+             'fill-extrusion-opacity': 0.9
+        }
+
+});
+});
+
+    
+    // Insert the layer beneath any symbol layer.
+  
+    map.addLayer({
+        'id': '3d-buildings',
+        'source': 'composite',
+        'source-layer': 'building',
+        'filter': ['==', 'extrude', 'true'],
+        'type': 'fill-extrusion',
+        'minzoom': 15,
+        'paint': {
+            'fill-extrusion-color': 'blue',
+
+            // use an 'interpolate' expression to add a smooth transition effect to the
+            // buildings as the user zooms in
+            'fill-extrusion-height': [
+                "interpolate", ["linear"], ["zoom"],
+                15, 0,
+                15.05, ["get", "height"]
+            ],
+            'fill-extrusion-base': [
+                "interpolate", ["linear"], ["zoom"],
+                15, 0,
+                15.05, ["get", "min_height"]
+            ],
+            'fill-extrusion-opacity': 1
+        }
+    }, labelLayerId)
+</script>
+</body>
+</html>

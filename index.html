@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -5,9 +6,13 @@
     <title>MyMapWeb
     </title>
     <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
-    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.49.0/mapbox-gl.js'></script>
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.48.0/mapbox-gl.js'></script>
     <script src='./building.js'></script>
-    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.49.0/mapbox-gl.css' rel='stylesheet' />
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.48.0/mapbox-gl.css' rel='stylesheet' />
+    <style>
+        body { margin:0; padding:0; }
+        #map { position:absolute; top:0; bottom:0; width:100%; }
+    </style>
 </head>
 <body>
 
@@ -56,10 +61,10 @@
 </style>
 
 <nav id="menu"></nav>
+<div id="map"></div>
 
-<div id="map" style='width :90%; height: 500px'></div>
 <script>
-mapboxgl.accessToken = 'pk.eyJ1IjoidGVyZXNhMTIzIiwiYSI6ImNqbHA5dXplcjIycWUzd29zM3Uya3hidWMifQ.KYno3Ky-NnoqIV6E_tbtLA';
+mapboxgl.accessToken = 'pk.eyJ1IjoiZ3Jhc3NjYW9ncmFzcyIsImEiOiJjam5jZGN3ejcyajJsM3Budnd1cmkxdmF6In0.5nQftETF88Yv_dvby5Q7og';
 var map = new mapboxgl.Map({
     container: 'map', // container id
     style: 'mapbox://styles/mapbox/light-v9', // stylesheet location
@@ -69,35 +74,42 @@ var map = new mapboxgl.Map({
     zoom: 11 // starting zoom
 });
 map.on('load', function() {
-
-map.addLayer({
-    "id": "data",
-    "type": "fill-extrusion",
-    "source": {
-        'type': 'geojson',
-        'data': './building.geojson'
-    },
-    'layout': {
-        'visibility': 'visible'
-        },
-    'paint': {
-            'fill-extrusion-color' : {
-                'property': 'colour',
-                'type': 'identity'
-            },
-            'fill-extrusion-height' : {
-                'type': 'identity',
-                'property': 'height'
-            },
-            'fill-extrusion-base' : {
-                'type': 'identity',
-                'property': 'base_height'
-            },
-             'fill-extrusion-opacity': 0.9
+    var layers = map.getStyle().layers;
+    var labelLayerId;
+    for (var i = 0; i < layers.length; i++) {
+        if (layers[i].type === 'symbol' && layers[i].layout['text-field']) {
+            labelLayerId = layers[i].id;
+            break;
         }
+    };
 
-});
-});
+    map.addLayer({
+        "id": "Increase",
+        "type": "fill-extrusion",
+        "source": {
+            'type': 'geojson',
+            'data': building
+        },
+        "layout": {
+            'visibility': 'visible'
+        },
+        'paint': {
+            // See the Mapbox Style Specification for details on data expressions.
+            // https://www.mapbox.com/mapbox-gl-js/style-spec/#expressions
+
+            // Get the fill-extrusion-color from the source 'color' property.
+            'fill-extrusion-color': ['get', 'color_ra'],
+
+            // Get fill-extrusion-height from the source 'height' property.
+            'fill-extrusion-height': ['get', 'height'],
+
+            // Get fill-extrusion-base from the source 'base_height' property.
+            'fill-extrusion-base': ['get', 'base_height'],
+
+            // Make extrusions slightly opaque for see through indoor walls.
+       
+        }
+    });
 
     
     // Insert the layer beneath any symbol layer.
@@ -110,7 +122,7 @@ map.addLayer({
         'type': 'fill-extrusion',
         'minzoom': 15,
         'paint': {
-            'fill-extrusion-color': 'blue',
+            'fill-extrusion-color': '#aaa',
 
             // use an 'interpolate' expression to add a smooth transition effect to the
             // buildings as the user zooms in
@@ -127,6 +139,7 @@ map.addLayer({
             'fill-extrusion-opacity': 1
         }
     }, labelLayerId)
+})
 </script>
 </body>
 </html>
